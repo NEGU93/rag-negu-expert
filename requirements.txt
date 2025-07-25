@@ -2,5 +2,5 @@ langchain
 langchain-openai
 langchain-chroma
 langchain-community
-gradio
+gradio>=5.0.0
 tqdm
