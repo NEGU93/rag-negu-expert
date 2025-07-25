@@ -60,7 +60,7 @@ with gr.Blocks(title="RAG Chatbot") as demo:
             visible=True,
         )
 
-    chatbot = gr.Chatbot()
+    chatbot = gr.Chatbot(height="60vh")
     msg = gr.Textbox(
         label="Type your message",
         placeholder="Ask me anything about Agustin...",
