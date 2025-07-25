@@ -26,6 +26,7 @@ with gr.Blocks() as demo:
         api_key_input = gr.Textbox(
             label="Enter your OpenAI API Key",
             type="password",
+            placeholder="sk-proj-...",
             interactive=True,
         )
         confirmation_msg = gr.Text(value="", visible=False)
