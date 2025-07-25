@@ -17,7 +17,7 @@ with gr.Blocks() as demo:
         label="Enter your OpenAI API Key", type="password"
     )
     chatbot = gr.Chatbot()
-    msg = gr.Textbox(label="Type your message")
+    msg = gr.Textbox(label="Type your message", placeholder="Ask me anything about Agustin...",, interactive=True, lines=1)
 
     history = gr.State([])  # Saves chat history
     chain_state = gr.State(None)  # Saves the chain instance
