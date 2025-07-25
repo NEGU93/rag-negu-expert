@@ -25,7 +25,7 @@ def validate_api_key(api_key):
     return True, "Valid"
 
 
-with gr.Blocks() as demo:
+with gr.Blocks(title="RAG Chatbot") as demo:
     gr.Markdown("# 🔑 RAG Chatbot with Your OpenAI Key")
 
     def store_api_key(api_key):

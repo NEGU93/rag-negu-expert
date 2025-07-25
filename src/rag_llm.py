@@ -43,7 +43,7 @@ Answer:"""
     # memory.chat_memory.messages.insert(0, SystemMessage(content=system_prompt))
 
     # the retriever is an abstraction over the VectorStore that will be used during RAG
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 25})
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
 
     # putting it together: set up the conversation chain with the GPT 3.5 LLM, the vector store and memory
     conversation_chain = ConversationalRetrievalChain.from_llm(
