@@ -19,9 +19,9 @@ This project uses **Retrieval-Augmented Generation (RAG)** to provide an LLM wit
 
 ## 🚀 Live Demo
 
-Try the interactive demo on **Hugging Face Spaces**: [RAG NEGU Expert](https://huggingface.co/spaces/NEGU93/rag-negu-expert)
+👉 [Try the interactive demo](https://huggingface.co/spaces/NEGU93/rag-negu-expert) 🤗
 
-The application is built with **Gradio**, providing an intuitive web interface for querying the RAG system.
+The application is built with **Gradio**, and deployed on **Hugging Face Spaces**.
 
 ## ✨ Features
 
