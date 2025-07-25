@@ -1,15 +1,9 @@
-import os
-from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 
 MODEL = "gpt-4o-mini"
-
-
-load_dotenv(override=True)
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
 def longchain_magic(vectorstore):
