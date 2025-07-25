@@ -3,3 +3,5 @@ langchain-openai
 langchain-chroma
 langchain-community
 tqdm
+pymupdf
+unstructured["all-docs"]
