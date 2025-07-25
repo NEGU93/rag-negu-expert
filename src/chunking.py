@@ -1,12 +1,39 @@
 import os
 from tqdm import tqdm
 from pathlib import Path
-from langchain.document_loaders import DirectoryLoader, TextLoader
+from langchain_community.document_loaders import (
+    TextLoader,
+    PyMuPDFLoader,
+    UnstructuredXMLLoader,
+    UnstructuredImageLoader,
+)
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
+from src.logger_init import logger
+
 
 db_name = "vector_db"
+
+
+loaders = {
+    ".pdf": PyMuPDFLoader,
+    ".xml": UnstructuredXMLLoader,
+    ".md": TextLoader,
+    ".tex": TextLoader,
+    ".txt": TextLoader,
+    ".jpg": UnstructuredImageLoader,
+}
+
+
+def load_single_file(file_path, loader_class):
+    """Load a single file with proper error handling"""
+    try:
+        loader = loader_class(str(file_path))
+        return loader.load()
+    except Exception as e:
+        logger.error(f"Failed to load {file_path.name}: {e}")
+        return []
 
 
 def create_chunks(folder_path):
@@ -14,40 +41,65 @@ def create_chunks(folder_path):
 
     def add_metadata(doc, doc_type):
         doc.metadata["doc_type"] = doc_type
+        if "source" in doc.metadata:
+            source_path = Path(doc.metadata["source"])
+            doc.metadata["filename"] = source_path.name
+            doc.metadata["file_path"] = str(source_path)
         return doc
 
-    # Get all subdirectories
     folders = [f for f in data_path.iterdir() if f.is_dir()]
-
-    text_loader_kwargs = {"encoding": "utf-8"}
     documents = []
+    file_stats = {"loaded": 0, "skipped": 0, "errors": 0}
 
     for folder in folders:
         doc_type = folder.name
-        loader = DirectoryLoader(
-            str(folder),
-            glob="**/*",  # Match all files
-            loader_cls=TextLoader,
-            loader_kwargs=text_loader_kwargs,
-        )
-        try:
-            folder_docs = loader.load()
-            documents.extend(
-                [add_metadata(doc, doc_type) for doc in folder_docs]
-            )
-        except Exception as e:
-            print(f"Error loading documents from {folder}: {e}")
-            continue
+        logger.info(f"Processing folder: {doc_type}")
+
+        # Find all files in the folder
+        files = [f for f in folder.rglob("*") if f.is_file()]
+
+        for file_path in tqdm(
+            files, desc=f"Processing {doc_type}", leave=False
+        ):
+            file_extension = file_path.suffix.lower()
+
+            if file_extension in loaders:
+                file_docs = load_single_file(
+                    file_path, loaders[file_extension]
+                )
+                if file_docs:
+                    # Add metadata to each document
+                    documents.extend(
+                        [add_metadata(doc, doc_type) for doc in file_docs]
+                    )
+                    logger.debug(f"Loaded: {file_path.name}")
+                    file_stats["loaded"] += 1
+                else:
+                    file_stats["errors"] += 1
+            else:
+                logger.debug(f"Skipped unsupported file: {file_path.name}")
+                file_stats["skipped"] += 1
+
+    # Summary
+    logger.info("File processing summary:")
+    logger.info(f"  - Loaded: {file_stats['loaded']} files")
+    logger.info(f"  - Skipped: {file_stats['skipped']} files")
+    logger.info(f"  - Errors: {file_stats['errors']} files")
+
+    if not documents:
+        logger.warning("No documents found!")
+        return []
 
     text_splitter = CharacterTextSplitter(
-        chunk_size=800,
+        chunk_size=1000,
         chunk_overlap=200,
         length_function=len,
     )
     chunks = text_splitter.split_documents(documents)
 
-    print(f"Total number of chunks: {len(chunks)}")
-    print(
+    logger.info(f"Total number of documents loaded: {len(documents)}")
+    logger.info(f"Total number of chunks: {len(chunks)}")
+    logger.info(
         f"Document types found: {set(doc.metadata['doc_type'] for doc in documents)}"
     )
 
@@ -118,3 +170,12 @@ def chunk_investigator(vectorstore):
         f"There are {count:,} vectors with {dimensions:,} dimensions in the vector store"
     )
     # tsne_visualizer(collection)
+
+
+if __name__ == "__main__":
+    import shutil
+
+    folder_path = "data"
+    shutil.rmtree("vector_db")
+    chunks = create_chunks(folder_path)
+    vectorstore = chunk_to_vector(chunks)
