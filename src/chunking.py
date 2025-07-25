@@ -174,8 +174,11 @@ def chunk_investigator(vectorstore):
 
 if __name__ == "__main__":
     import shutil
+    from dotenv import load_dotenv
 
     folder_path = "data"
     shutil.rmtree("vector_db")
+    load_dotenv(override=True)
+    os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
     chunks = create_chunks(folder_path)
     vectorstore = chunk_to_vector(chunks)
