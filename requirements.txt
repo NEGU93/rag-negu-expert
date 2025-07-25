@@ -4,4 +4,4 @@ langchain-chroma
 langchain-community
 tqdm
 pymupdf
-unstructured["all-docs"]
+unstructured[all-docs]
