@@ -92,4 +92,4 @@ with gr.Blocks() as demo:
         outputs=[chatbot, msg, chain_state],
     )
 
-demo.launch()
+demo.launch(inbrowser=True)
