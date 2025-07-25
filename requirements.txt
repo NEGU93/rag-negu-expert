@@ -1,2 +1,6 @@
 langchain
+langchain-openai
+langchain-chroma
+langchain-community
 gradio
+tqdm
