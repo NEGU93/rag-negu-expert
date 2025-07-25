@@ -60,12 +60,14 @@ with gr.Blocks() as demo:
         except Exception as e:
             chat_history[-1][1] = f"❌ Error: {str(e)}"
 
-        return chat_history, "", chain
+        return gr.update(value=chat_history), "", chain
 
-    msg.submit(
+    submit_btn = gr.Button("Send")
+    submit_btn.click(
         fn=user_submit,
         inputs=[msg, history, chain_state, api_key_input],
         outputs=[chatbot, msg, chain_state],
     )
+
 
 demo.launch()
