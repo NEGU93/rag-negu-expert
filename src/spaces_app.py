@@ -23,7 +23,7 @@ with gr.Blocks() as demo:
         interactive=True,
         lines=1,
     )
-
+    submit_btn = gr.Button("Send")
     history = gr.State([])  # Saves chat history
     chain_state = gr.State(None)  # Saves the chain instance
 
@@ -52,22 +52,20 @@ with gr.Blocks() as demo:
                     None,
                 )
 
-        chat_history = chat_history + [[user_message, None]]
-
-        try:
-            result = chain.invoke({"question": user_message})
-            chat_history[-1][1] = result["answer"]
-        except Exception as e:
-            chat_history[-1][1] = f"❌ Error: {str(e)}"
+        result = chain.invoke({"question": user_message})
+        chat_history.append([user_message, result["answer"]])
 
         return gr.update(value=chat_history), "", chain
 
-    submit_btn = gr.Button("Send")
     submit_btn.click(
         fn=user_submit,
         inputs=[msg, history, chain_state, api_key_input],
         outputs=[chatbot, msg, chain_state],
     )
-
+    msg.submit(
+        fn=user_submit,
+        inputs=[msg, history, chain_state, api_key_input],
+        outputs=[chatbot, msg, chain_state],
+    )
 
 demo.launch()
