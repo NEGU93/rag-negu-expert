@@ -5,7 +5,8 @@ from src.chunking import init_db
 import os
 
 load_dotenv(override=True)
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+if os.getenv("OPENAI_API_KEY") is not None:
+    os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
 def init_chain():
