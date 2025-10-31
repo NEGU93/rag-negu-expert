@@ -1,6 +1,5 @@
 import os
 import hashlib
-import logging
 from tqdm import tqdm
 from pathlib import Path
 from langchain_community.document_loaders import (
@@ -8,10 +7,12 @@ from langchain_community.document_loaders import (
     PyMuPDFLoader,
     UnstructuredXMLLoader,
     UnstructuredImageLoader,
+    JSONLoader,
 )
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
+from src.website_scraper import scrape_website
 from src.logger_init import logger
 
 
@@ -25,6 +26,9 @@ loaders = {
     ".tex": TextLoader,
     ".txt": TextLoader,
     ".jpg": UnstructuredImageLoader,
+    ".json": lambda path: JSONLoader(
+        file_path=path, jq_schema=".", text_content=False
+    ),
 }
 
 
@@ -155,6 +159,8 @@ def chunk_to_vector(chunks):
 
 
 def init_db(folder_path="data", db_name=db_name):
+    scrape_website()
+
     hash_file = os.path.join(db_name, ".data_hash")
 
     current_hash = get_data_hash(folder_path)
@@ -162,6 +168,8 @@ def init_db(folder_path="data", db_name=db_name):
     if os.path.exists(hash_file):
         with open(hash_file, "r") as f:
             stored_hash = f.read().strip()
+    else:
+        logger.info("No existing hash file found.")
 
     if os.path.exists(db_name) and stored_hash == current_hash:
         logger.info("✅ Vectorstore is up to date. Loading existing one...")
@@ -185,15 +193,3 @@ def init_db(folder_path="data", db_name=db_name):
         f"Vectorstore ready with {vectorstore._collection.count()} documents"
     )
     return vectorstore
-
-
-if __name__ == "__main__":
-    import shutil
-    from dotenv import load_dotenv
-
-    folder_path = "data"
-    shutil.rmtree("vector_db")
-    load_dotenv(override=True)
-    os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-    chunks = create_chunks(folder_path)
-    vectorstore = chunk_to_vector(chunks)

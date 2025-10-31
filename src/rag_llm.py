@@ -2,23 +2,16 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain.schema import SystemMessage, AIMessage
+from langchain.schema import AIMessage
 
-MODEL = "gpt-4o-mini"
+MODEL = "gpt-5-mini"  # "gpt-4o-mini"
 INITIAL_MESSAGE = """Hello! I'm an AI assistant specialized in providing information about Jose Agustin BARRACHINA. I have access to detailed information about his background, projects, skills, and experience. 
 
 How can I help you learn more about him today?"""
 
 
 def longchain_magic(vectorstore):
-    # create a new Chat with OpenAI
     llm = ChatOpenAI(temperature=0.7, model_name=MODEL)
-    # llm = ChatOpenAI(
-    #     temperature=0.7,
-    #     model_name="llama3.2",
-    #     base_url="http://localhost:11434/v1",
-    #     api_key="ollama",
-    # )
 
     system_prompt = """You are an AI assistant specialized in providing information about Jose Agustin BARRACHINA (also known as Agustin, NEGU, or Jose). All pronouns ("he", "him") refer to him.
 

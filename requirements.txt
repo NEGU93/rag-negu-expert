@@ -3,5 +3,11 @@ langchain-openai==0.3.30
 langchain-chroma==0.2.5
 langchain-community==0.3.27
 tqdm
+jq
+pi_heif
+pdf2image
+pdfminer
+pdfminer.six==20221105
 pymupdf
+unstructured-inference
 unstructured[all-docs]
