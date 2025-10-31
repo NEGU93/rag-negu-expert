@@ -1,7 +1,7 @@
-langchain
-langchain-openai
-langchain-chroma
-langchain-community
+langchain==0.3.27
+langchain-openai==0.3.30
+langchain-chroma==0.2.5
+langchain-community==0.3.27
 tqdm
 pymupdf
 unstructured[all-docs]
