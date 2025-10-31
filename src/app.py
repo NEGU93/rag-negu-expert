@@ -12,15 +12,17 @@ def chat(question, history):
 
 initial_history = [{"role": "assistant", "content": INITIAL_MESSAGE}]
 
-
 load_dotenv(override=True)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
 vectorstore = init_db()
 conversation_chain = longchain_magic(vectorstore)
-view = gr.ChatInterface(
+
+chat_interface = gr.ChatInterface(
     chat,
     type="messages",
-    chatbot=gr.Chatbot(value=initial_history, type="messages"),
+    chatbot=gr.Chatbot(value=initial_history, type="messages", height="80vh"),
     title="🤖 AI Expert on Jose Agustin BARRACHINA Assistant powered by RAG",
     fill_height=True,
-).launch(inbrowser=True)
+)
+chat_interface.launch()

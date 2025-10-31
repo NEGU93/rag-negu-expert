@@ -33,15 +33,13 @@ loaders = {
 
 
 def get_data_hash(folder_path="data"):
-    """
-    Compute a hash representing the current state of `data/`
-    """
     hash_md5 = hashlib.md5()
     for root, _, files in os.walk(folder_path):
         for f in sorted(files):
             path = os.path.join(root, f)
             hash_md5.update(f.encode())
-            hash_md5.update(str(os.path.getmtime(path)).encode())
+            with open(path, "rb") as file:
+                hash_md5.update(file.read())
     return hash_md5.hexdigest()
 
 
@@ -159,7 +157,7 @@ def chunk_to_vector(chunks):
 
 
 def init_db(folder_path="data", db_name=db_name):
-    scrape_website()
+    # scrape_website()
 
     hash_file = os.path.join(db_name, ".data_hash")
 
