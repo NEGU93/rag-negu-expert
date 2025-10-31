@@ -1,4 +1,6 @@
 import os
+import hashlib
+import logging
 from tqdm import tqdm
 from pathlib import Path
 from langchain_community.document_loaders import (
@@ -24,6 +26,19 @@ loaders = {
     ".txt": TextLoader,
     ".jpg": UnstructuredImageLoader,
 }
+
+
+def get_data_hash(folder_path="data"):
+    """
+    Compute a hash representing the current state of `data/`
+    """
+    hash_md5 = hashlib.md5()
+    for root, _, files in os.walk(folder_path):
+        for f in sorted(files):
+            path = os.path.join(root, f)
+            hash_md5.update(f.encode())
+            hash_md5.update(str(os.path.getmtime(path)).encode())
+    return hash_md5.hexdigest()
 
 
 def load_single_file(file_path, loader_class):
@@ -140,21 +155,35 @@ def chunk_to_vector(chunks):
 
 
 def init_db(folder_path="data", db_name=db_name):
-    if os.path.exists(db_name):
-        print(
-            "Vectorstore already exists. Skipping chunk creation and loading existing vectorstore."
-        )
+    hash_file = os.path.join(db_name, ".data_hash")
+
+    current_hash = get_data_hash(folder_path)
+    stored_hash = None
+    if os.path.exists(hash_file):
+        with open(hash_file, "r") as f:
+            stored_hash = f.read().strip()
+
+    if os.path.exists(db_name) and stored_hash == current_hash:
+        logger.info("✅ Vectorstore is up to date. Loading existing one...")
         embeddings = OpenAIEmbeddings()
         vectorstore = Chroma(
             persist_directory=db_name, embedding_function=embeddings
         )
-        print(
-            f"Loaded existing vectorstore with {vectorstore._collection.count()} documents"
-        )
     else:
-        print("Creating new vectorstore from documents...")
+        logger.info(
+            "🛠 Changes detected or DB missing. Rebuilding vectorstore..."
+        )
         chunks = create_chunks(folder_path)
         vectorstore = chunk_to_vector(chunks)
+
+        # Save hash for next time
+        os.makedirs(db_name, exist_ok=True)
+        with open(hash_file, "w") as f:
+            f.write(current_hash)
+
+    logger.info(
+        f"Vectorstore ready with {vectorstore._collection.count()} documents"
+    )
     return vectorstore
 
 
