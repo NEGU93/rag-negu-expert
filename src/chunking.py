@@ -158,20 +158,6 @@ def init_db(folder_path="data", db_name=db_name):
     return vectorstore
 
 
-def chunk_investigator(vectorstore):
-    collection = vectorstore._collection
-    count = collection.count()
-
-    sample_embedding = collection.get(limit=1, include=["embeddings"])[
-        "embeddings"
-    ][0]
-    dimensions = len(sample_embedding)
-    print(
-        f"There are {count:,} vectors with {dimensions:,} dimensions in the vector store"
-    )
-    # tsne_visualizer(collection)
-
-
 if __name__ == "__main__":
     import shutil
     from dotenv import load_dotenv
