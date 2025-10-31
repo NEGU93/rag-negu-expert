@@ -2,8 +2,12 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
+from langchain.schema import SystemMessage, AIMessage
 
 MODEL = "gpt-4o-mini"
+INITIAL_MESSAGE = """Hello! I'm an AI assistant specialized in providing information about Jose Agustin BARRACHINA. I have access to detailed information about his background, projects, skills, and experience. 
+
+How can I help you learn more about him today?"""
 
 
 def longchain_magic(vectorstore):
@@ -34,21 +38,29 @@ def longchain_magic(vectorstore):
 - Comparisons: Only if both subjects are in context
 - Timelines: Present chronologically
 - Uncertain info: Use "According to the available information..." or "The documents indicate..."
+    """
 
-Context: {context}
+    qa_prompt = """Use the following pieces of context to answer the question at the end.
+
+Context:
+{context}
+
 Question: {question}
+
 Answer:"""
 
     prompt = PromptTemplate(
         input_variables=["context", "question"],
-        template=system_prompt,
+        template=system_prompt + "\n\n" + qa_prompt,
     )
 
     # set up the conversation memory for the chat
     memory = ConversationBufferMemory(
         memory_key="chat_history", return_messages=True
     )
-    # memory.chat_memory.messages.insert(0, SystemMessage(content=system_prompt))
+    initial_message = AIMessage(content=INITIAL_MESSAGE)
+
+    memory.chat_memory.add_message(initial_message)
 
     # the retriever is an abstraction over the VectorStore that will be used during RAG
     retriever = vectorstore.as_retriever(search_kwargs={"k": 10})

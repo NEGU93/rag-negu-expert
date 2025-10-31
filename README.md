@@ -5,7 +5,7 @@ colorFrom: indigo
 colorTo: blue
 sdk: gradio
 sdk_version: 5.34.2
-app_file: src/spaces_app.py
+app_file: src/app.py
 ---
 
 # RAG NEGU Expert 🔍

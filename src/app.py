@@ -1,7 +1,7 @@
 import os
 import gradio as gr
 from dotenv import load_dotenv
-from src.rag_llm import longchain_magic
+from src.rag_llm import longchain_magic, INITIAL_MESSAGE
 from src.chunking import init_db
 
 
@@ -10,8 +10,16 @@ def chat(question, history):
     return result["answer"]
 
 
+initial_history = [{"role": "assistant", "content": INITIAL_MESSAGE}]
+
+
 load_dotenv(override=True)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 vectorstore = init_db()
 conversation_chain = longchain_magic(vectorstore)
-view = gr.ChatInterface(chat, type="messages").launch(inbrowser=True)
+view = gr.ChatInterface(
+    chat,
+    type="messages",
+    chatbot=gr.Chatbot(value=initial_history, type="messages"),
+    title="🤖 AI Expert on Jose Agustin BARRACHINA Assistant powered by RAG",
+).launch(inbrowser=True)
