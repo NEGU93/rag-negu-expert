@@ -20,6 +20,8 @@ conversation_chain = longchain_magic(vectorstore)
 view = gr.ChatInterface(
     chat,
     type="messages",
+    height="100vh",
     chatbot=gr.Chatbot(value=initial_history, type="messages"),
     title="🤖 AI Expert on Jose Agustin BARRACHINA Assistant powered by RAG",
+    fill_height=True,
 ).launch(inbrowser=True)
