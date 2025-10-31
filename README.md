@@ -12,7 +12,8 @@ app_file: src/spaces_app.py
 
 [![Hugging Face Spaces](https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/NEGU93/rag-negu-expert)
 [![Gradio](https://img.shields.io/badge/Gradio-5.34.2-orange)](https://gradio.app/)
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+![LangChain](https://img.shields.io/badge/LangChain-0.1+-blue.svg)
+![RAG](https://img.shields.io/badge/RAG-ChromaDB-orange.svg)
 
 This project uses **Retrieval-Augmented Generation (RAG)** to provide an LLM with comprehensive information about my personal experience, creating a knowledgeable expert system that can answer questions about my background, skills, and projects.
 
