@@ -16,4 +16,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://NEGU93:$HF_TOKEN@huggingface.co/spaces/NEGU93/rag-negu-expert main
+        run: git push https://user:$HF_TOKEN@huggingface.co/spaces/NEGU93/rag-negu-expert main

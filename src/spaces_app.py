@@ -5,8 +5,7 @@ from src.chunking import init_db
 import os
 
 load_dotenv(override=True)
-if os.getenv("OPENAI_API_KEY") is not None:
-    os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
 def init_chain():
@@ -16,12 +15,6 @@ def init_chain():
 
 with gr.Blocks(title="RAG Chatbot") as demo:
     gr.Markdown("# 🔑 RAG Chatbot with Your OpenAI Key")
-
-    if os.getenv("OPENAI_API_KEY") is not None:
-        confirmation_msg = gr.Text(
-            value="✅ OpenAI API Key already set",
-            visible=True,
-        )
 
     chatbot = gr.Chatbot(height="60vh")
     msg = gr.Textbox(
