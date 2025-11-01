@@ -6,6 +6,7 @@ colorTo: blue
 sdk: gradio
 sdk_version: 5.34.2
 app_file: src/app.py
+startup_command: bash setup.sh && python src/app.py
 ---
 
 # RAG NEGU Expert 🔍
