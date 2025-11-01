@@ -9,5 +9,6 @@ pdf2image
 pdfminer
 pdfminer.six==20221105
 pymupdf
+playwright
 unstructured-inference
 unstructured[all-docs]
