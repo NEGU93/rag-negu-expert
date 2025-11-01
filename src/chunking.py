@@ -12,7 +12,7 @@ from langchain_community.document_loaders import (
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
-from src.website_scraper import scrape_website
+from src.website_scraper import scrape_website, scrape_github
 from src.logger_init import logger
 
 
@@ -158,6 +158,7 @@ def chunk_to_vector(chunks):
 
 def init_db(folder_path="data", db_name=db_name):
     scrape_website()
+    scrape_github()
 
     hash_file = os.path.join(db_name, ".data_hash")
 

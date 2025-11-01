@@ -252,6 +252,16 @@ def get_repo_contents(owner, repo, path=""):
     return response.json()
 
 
+def get_readme(owner, repo):
+    """Fetch the README file from a repository."""
+    url = f"https://api.github.com/repos/{owner}/{repo}/readme"
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return response.json()
+    return None
+
+
 def find_markdown_files(owner, repo, path="", md_files=None):
     """Recursively find all markdown files in a repository."""
     if md_files is None:
@@ -270,24 +280,23 @@ def find_markdown_files(owner, repo, path="", md_files=None):
     return md_files
 
 
-def download_file(file_info, base_dir):
+def download_file(file_info, base_dir: Path):
     """Download a file from GitHub."""
     # Create directory structure
     repo_name = file_info["repo_name"]
     file_path = file_info["path"]
 
-    local_path = os.path.join(base_dir, repo_name, file_path)
-    os.makedirs(os.path.dirname(local_path), exist_ok=True)
-
     # Download file content
     response = requests.get(file_info["download_url"], headers=headers)
     if response.status_code == 200:
-        with open(local_path, "wb") as f:
+        with open(base_dir / f"{repo_name}.md", "wb") as f:
             f.write(response.content)
-        print(f"Downloaded: {repo_name}/{file_path}")
+        logger.info(
+            f"Downloaded: {repo_name}/{file_path} to {base_dir / repo_name}.md"
+        )
         return True
     else:
-        print(f"Failed to download: {repo_name}/{file_path}")
+        logger.error(f"Failed to download: {repo_name}/{file_path}")
         return False
 
 
@@ -300,15 +309,15 @@ def scrape_github():
 
     for repo in repos:
         repo_name = repo["name"]
-        logger.info(f"\nScanning {repo_name}...")
+        logger.debug(f"\nScanning {repo_name}...")
 
-        md_files = find_markdown_files(USERNAME, repo_name)
-        logger.info(f"Found {len(md_files)} markdown file(s)")
-
-        for md_file in md_files:
-            md_file["repo_name"] = repo_name
-            if download_file(md_file, OUTPUT_DIR / "github"):
+        readme_md = get_readme(USERNAME, repo_name)
+        if readme_md:
+            readme_md["repo_name"] = repo_name
+            if download_file(readme_md, OUTPUT_DIR / "github"):
                 total_files += 1
+        else:
+            logger.warning(f"No README found for {repo_name}")
 
     logger.info(
         f"\n✓ Complete! Downloaded {total_files} markdown files to '{OUTPUT_DIR / 'github'}'"
