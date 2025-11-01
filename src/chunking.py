@@ -157,7 +157,7 @@ def chunk_to_vector(chunks):
 
 
 def init_db(folder_path="data", db_name=db_name):
-    # scrape_website()
+    scrape_website()
 
     hash_file = os.path.join(db_name, ".data_hash")
 

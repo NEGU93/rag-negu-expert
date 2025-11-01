@@ -1,10 +1,25 @@
+import os
 import json
 import time
+import requests
+from dotenv import load_dotenv
 from datetime import datetime
 from pathlib import Path
 from langchain.schema import Document
 from playwright.sync_api import sync_playwright
 from src.logger_init import logger
+
+
+load_dotenv(override=True)
+os.environ["GH_TOKEN"] = os.getenv("GH_TOKEN")
+token = os.getenv("GH_TOKEN")
+headers = {}
+if token:
+    headers["Authorization"] = f"token {token}"
+else:
+    logger.warning(
+        "No GH_TOKEN found in environment. Using unauthenticated requests (rate-limited)."
+    )
 
 BASE_URL = "https://negu93.github.io"
 ROUTES = [
@@ -14,8 +29,15 @@ ROUTES = [
     # "languages",
     # "chat_llm",
 ]
-OUTPUT_DIR = Path("data/website")
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_DIR = Path("data")
+(OUTPUT_DIR / "website").mkdir(parents=True, exist_ok=True)
+(OUTPUT_DIR / "github").mkdir(parents=True, exist_ok=True)
+
+USERNAME = "NEGU93"
+
+"""
+Personal Website Scraper
+"""
 
 
 def auto_scroll(page, pause_time: float = 0.3, max_scrolls: int = 50):
@@ -146,7 +168,9 @@ def scrape_website(base_url: str = BASE_URL, routes: list[str] = ROUTES):
                     docs.extend(timeline_docs)
 
                     # Save timeline events to a JSON for inspection
-                    timeline_json_file = OUTPUT_DIR / f"{route}.json"
+                    timeline_json_file = (
+                        OUTPUT_DIR / "website" / f"{route}.json"
+                    )
                     with open(timeline_json_file, "w", encoding="utf-8") as f:
                         json.dump(
                             [eval(d.page_content) for d in timeline_docs],
@@ -163,7 +187,7 @@ def scrape_website(base_url: str = BASE_URL, routes: list[str] = ROUTES):
                     if not text:
                         logger.warning(f"⚠️ No text extracted from {url}")
                         continue
-                    file_path = OUTPUT_DIR / f"{route}.txt"
+                    file_path = OUTPUT_DIR / "website" / f"{route}.txt"
                     file_path.write_text(text, encoding="utf-8")
                     docs.append(
                         Document(
@@ -183,7 +207,116 @@ def scrape_website(base_url: str = BASE_URL, routes: list[str] = ROUTES):
     return docs
 
 
+"""
+GitHub Repository Scraper
+"""
+
+
+def get_user_repos(username):
+    """Fetch all public repositories for a user."""
+    repos = []
+    page = 1
+
+    while True:
+        url = f"https://api.github.com/users/{username}/repos"
+        params = {"page": page, "per_page": 100, "type": "public"}
+        response = requests.get(url, headers=headers, params=params)
+
+        if response.status_code == 403:
+            message = response.json().get("message", "Forbidden")
+            logger.error(f"Access forbidden or rate limited: {message}")
+            break
+
+        if response.status_code != 200:
+            logger.error(f"Error fetching repos: {response.status_code}")
+            break
+
+        data = response.json()
+        if not data:
+            break
+
+        repos.extend(data)
+        page += 1
+
+    return repos
+
+
+def get_repo_contents(owner, repo, path=""):
+    """Recursively fetch all files in a repository."""
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        return []
+
+    return response.json()
+
+
+def find_markdown_files(owner, repo, path="", md_files=None):
+    """Recursively find all markdown files in a repository."""
+    if md_files is None:
+        md_files = []
+
+    contents = get_repo_contents(owner, repo, path)
+
+    for item in contents:
+        if item["type"] == "file" and item["name"].lower().endswith(
+            (".md", ".markdown")
+        ):
+            md_files.append(item)
+        elif item["type"] == "dir":
+            find_markdown_files(owner, repo, item["path"], md_files)
+
+    return md_files
+
+
+def download_file(file_info, base_dir):
+    """Download a file from GitHub."""
+    # Create directory structure
+    repo_name = file_info["repo_name"]
+    file_path = file_info["path"]
+
+    local_path = os.path.join(base_dir, repo_name, file_path)
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+    # Download file content
+    response = requests.get(file_info["download_url"], headers=headers)
+    if response.status_code == 200:
+        with open(local_path, "wb") as f:
+            f.write(response.content)
+        print(f"Downloaded: {repo_name}/{file_path}")
+        return True
+    else:
+        print(f"Failed to download: {repo_name}/{file_path}")
+        return False
+
+
+def scrape_github():
+    logger.info(f"Fetching repositories for {USERNAME}...")
+    repos = get_user_repos(USERNAME)
+    logger.info(f"Found {len(repos)} public repositories")
+
+    total_files = 0
+
+    for repo in repos:
+        repo_name = repo["name"]
+        logger.info(f"\nScanning {repo_name}...")
+
+        md_files = find_markdown_files(USERNAME, repo_name)
+        logger.info(f"Found {len(md_files)} markdown file(s)")
+
+        for md_file in md_files:
+            md_file["repo_name"] = repo_name
+            if download_file(md_file, OUTPUT_DIR / "github"):
+                total_files += 1
+
+    logger.info(
+        f"\n✓ Complete! Downloaded {total_files} markdown files to '{OUTPUT_DIR / 'github'}'"
+    )
+
+
 if __name__ == "__main__":
-    logger.info("Starting full website scrape...\n")
-    docs = scrape_website()
-    logger.info(f"\n📁 Saved {len(docs)}")
+    # logger.info("Starting full website scrape...\n")
+    # docs = scrape_website()
+    # logger.info(f"\n📁 Saved {len(docs)}")
+    scrape_github()
