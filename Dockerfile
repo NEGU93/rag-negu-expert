@@ -2,6 +2,7 @@ FROM python:3.10
 
 WORKDIR /home/user/app
 
+# Install system dependencies for Playwright
 RUN apt-get update && apt-get install -y \
     libnss3 \
     libnspr4 \
@@ -20,7 +21,6 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     libxcursor1 \
     libgtk-3-0 \
-    libgdk-pixbuf2.0-0 \
     libx11-xcb1 \
     libxcb-dri3-0 \
     libxshmfence1 \
@@ -31,11 +31,13 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy requirements and install Python packages
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN playwright install
 
+# Copy the rest of the application
 COPY . .
 
 CMD ["python", "src/app.py"]
