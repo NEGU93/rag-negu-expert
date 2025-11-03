@@ -34,4 +34,4 @@ chat_interface = gr.ChatInterface(
     title="🤖 AI Expert on Jose Agustin BARRACHINA Assistant powered by RAG",
     fill_height=True,
 )
-chat_interface.launch()
+chat_interface.launch(server_name="0.0.0.0", server_port=7860, show_error=True, debug=True)
