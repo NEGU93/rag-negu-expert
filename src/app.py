@@ -30,8 +30,8 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 chat_interface = gr.ChatInterface(
     chat,
     type="messages",
-    chatbot=gr.Chatbot(value=initial_history, type="messages", height="80vh"),
+    chatbot=gr.Chatbot(value=initial_history, type="messages", height="70vh"),
     title="🤖 AI Expert on Jose Agustin BARRACHINA Assistant powered by RAG",
-    fill_height=True,
+    fill_height=False,
 )
 chat_interface.launch(server_name="0.0.0.0", server_port=7860, show_error=True, debug=True)
