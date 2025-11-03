@@ -1,8 +1,16 @@
 import os
 import gradio as gr
+from functools import cache
 from dotenv import load_dotenv
 from src.rag_llm import longchain_magic, INITIAL_MESSAGE
 from src.chunking import init_db
+
+
+@cache
+def get_conversation_chain():
+    """Initialize once and cache the result"""
+    vectorstore = init_db()
+    return longchain_magic(vectorstore)
 
 
 def chat(question, history):
@@ -14,9 +22,6 @@ initial_history = [{"role": "assistant", "content": INITIAL_MESSAGE}]
 
 load_dotenv(override=True)
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
-vectorstore = init_db()
-conversation_chain = longchain_magic(vectorstore)
 
 chat_interface = gr.ChatInterface(
     chat,
