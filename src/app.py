@@ -14,7 +14,10 @@ def get_conversation_chain():
 
 
 def chat(question, history):
-    conversation_chain = get_conversation_chain()
+    try:
+        conversation_chain = get_conversation_chain()
+    except Exception as e:
+        return f"⚠️ Initialization error: {e}"
     result = conversation_chain.invoke({"question": question})
     return result["answer"]
 
