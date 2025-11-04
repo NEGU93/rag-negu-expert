@@ -10,7 +10,7 @@ INITIAL_MESSAGE = """Hello! I'm an AI assistant specialized in providing informa
 How can I help you learn more about him today?"""
 
 
-def longchain_magic(vectorstore):
+def langchain_magic(vectorstore):
     llm = ChatOpenAI(temperature=0.7, model_name=MODEL)
 
     system_prompt = """You are an AI assistant specialized in providing information about Jose Agustin BARRACHINA (also known as Agustin, NEGU, or Jose). All pronouns ("he", "him") refer to him.

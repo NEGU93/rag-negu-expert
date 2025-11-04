@@ -2,7 +2,7 @@ import os
 import gradio as gr
 from functools import cache
 from dotenv import load_dotenv
-from src.rag_llm import longchain_magic, INITIAL_MESSAGE
+from src.rag_llm import langchain_magic, INITIAL_MESSAGE
 from src.chunking import init_db
 
 
@@ -10,7 +10,7 @@ from src.chunking import init_db
 def get_conversation_chain():
     """Initialize once and cache the result"""
     vectorstore = init_db()
-    return longchain_magic(vectorstore)
+    return langchain_magic(vectorstore)
 
 
 def chat(question, history):
@@ -34,4 +34,6 @@ chat_interface = gr.ChatInterface(
     title="🤖 AI Expert on Jose Agustin BARRACHINA Assistant powered by RAG",
     fill_height=False,
 )
-chat_interface.launch(server_name="0.0.0.0", server_port=7860, show_error=True, debug=True)
+chat_interface.launch(
+    server_name="0.0.0.0", server_port=7860, show_error=True, debug=True
+)
