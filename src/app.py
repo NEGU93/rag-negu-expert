@@ -2,38 +2,44 @@ import os
 import gradio as gr
 from functools import cache
 from dotenv import load_dotenv
-from src.rag_llm import langchain_magic, INITIAL_MESSAGE
-from src.chunking import init_db
+from src.wiki_query import INITIAL_MESSAGE, create_wiki_chain
+
+load_dotenv(override=True)
+if key := os.getenv("OPENAI_API_KEY"):
+    os.environ["OPENAI_API_KEY"] = key
 
 
 @cache
-def get_conversation_chain():
-    """Initialize once and cache the result"""
-    vectorstore = init_db()
-    return langchain_magic(vectorstore)
+def get_wiki_chat():
+    """Initialize once and cache the wiki chat chain."""
+    return create_wiki_chain()
 
 
 def chat(question, history):
     try:
-        conversation_chain = get_conversation_chain()
+        chain = get_wiki_chat()
     except Exception as e:
         return f"⚠️ Initialization error: {e}"
-    result = conversation_chain.invoke({"question": question})
+    result = chain.invoke({"question": question})
     return result["answer"]
 
 
 initial_history = [{"role": "assistant", "content": INITIAL_MESSAGE}]
 
-load_dotenv(override=True)
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
 chat_interface = gr.ChatInterface(
     chat,
     type="messages",
     chatbot=gr.Chatbot(value=initial_history, type="messages", height="70vh"),
-    title="🤖 AI Expert on Jose Agustin BARRACHINA Assistant powered by RAG",
+    title="AI Expert on Jose Agustin BARRACHINA (LLM Wiki)",
     fill_height=False,
 )
-chat_interface.launch(
-    server_name="0.0.0.0", server_port=7860, show_error=True, debug=True
-)
+if __name__ == "__main__":
+    try:
+        chat_interface.launch(
+            server_name="0.0.0.0",
+            server_port=7860,
+            show_error=True,
+            debug=True,
+        )
+    except KeyboardInterrupt:
+        print("\nServer stopped.")

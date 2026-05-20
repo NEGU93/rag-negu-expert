@@ -29,7 +29,7 @@ ROUTES = [
     # "languages",
     # "chat_llm",
 ]
-OUTPUT_DIR = Path("data")
+OUTPUT_DIR = Path("raw")
 (OUTPUT_DIR / "website").mkdir(parents=True, exist_ok=True)
 (OUTPUT_DIR / "github").mkdir(parents=True, exist_ok=True)
 
